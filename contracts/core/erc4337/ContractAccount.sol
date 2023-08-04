@@ -4,15 +4,16 @@ pragma solidity ^0.8.12;
 /* solhint-disable avoid-low-level-calls */
 /* solhint-disable no-inline-assembly */
 /* solhint-disable reason-string */
-
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 
 import "./BaseAccount.sol";
 import "../callback/TokenCallbackHandler.sol";
 
-contract ContractAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Initializable {
+contract ContractAccount is IERC1271, BaseAccount, TokenCallbackHandler, UUPSUpgradeable, Initializable {
     using ECDSA for bytes32;
 
     address public owner;
@@ -71,6 +72,20 @@ contract ContractAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, 
         }
     }
 
+    function isValidSignature(bytes32 hash, bytes memory signature)
+        external
+        view
+        returns (bytes4 magicValue)
+    {
+        bool isValid = SignatureChecker.isValidSignatureNow(owner, hash, signature);
+
+        if (isValid) {
+            return IERC1271.isValidSignature.selector;
+        }
+
+        return "";
+    }
+
     /**
      * @dev The _entryPoint member is immutable, to reduce gas consumption.  To upgrade EntryPoint,
      * a new implementation of SimpleAccount must be deployed with the new EntryPoint address, then upgrading
@@ -94,7 +109,7 @@ contract ContractAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, 
     function _validateSignature(UserOperation calldata userOp, bytes32 userOpHash)
     internal override virtual returns (uint256 validationData) {
         bytes32 hash = userOpHash.toEthSignedMessageHash();
-        if (owner != hash.recover(userOp.signature))
+        if (!_isValidSigner(hash.recover(userOp.signature)))
             return SIG_VALIDATION_FAILED;
         return 0;
     }
@@ -106,6 +121,10 @@ contract ContractAccount is BaseAccount, TokenCallbackHandler, UUPSUpgradeable, 
                 revert(add(result, 32), mload(result))
             }
         }
+    }
+
+    function _isValidSigner(address signer) internal view returns (bool) {
+        return signer == owner;
     }
 
     /**

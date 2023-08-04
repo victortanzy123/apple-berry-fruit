@@ -3,7 +3,7 @@ pragma solidity ^0.8.12;
 
 /* solhint-disable avoid-low-level-calls */
 /* solhint-disable no-empty-blocks */
-
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "../../interfaces/erc4337/IAccount.sol";
 import "../../interfaces/erc4337/IEntryPoint.sol";
 import "./Helpers.sol";

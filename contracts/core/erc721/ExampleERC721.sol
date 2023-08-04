@@ -15,7 +15,9 @@ contract ExampleERC721 is ERC721, BoringOwnable  {
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor(string memory name_, string memory symbol_) ERC721(name_, symbol_) {}
+    constructor(string memory name_, string memory symbol_) ERC721(name_, symbol_) {
+        _tokenIds.increment(); // Start from 1
+    }
 
     function tokenURI(uint256 tokenId) public override view returns (string memory) {
         _requireMinted(tokenId);

@@ -41,7 +41,7 @@
     "size": "yarn hardhat size-contracts",
     "clean": "yarn hardhat clean",
     "fcompile": "yarn clean && yarn compile",
-    "format": "prettier -w '(contracts|interfaces|src|test|deployments)/**/*.(sol|json|ts)'",
+    "format": "prettier -w '(interfaces|src|scripts|test|deployments)/**/*.(sol|json|ts)'",
     "deploy:sepolia": "npx hardhat run --network sepolia scripts/deploy/index.ts"
   },
   "packageManager": "yarn@3.3.1",
